@@ -17,7 +17,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(express.json())
 app.use(requestLogger)
-app.use(unknownEndpoint)
+
 
 let notes = [
     {
@@ -92,7 +92,7 @@ app.post('/api/notes', (request, response) => {
     response.json(note)
 })
 
-
+app.use(unknownEndpoint)
 // 开启端口监听
 const PORT = 3001
 app.listen(PORT, () => {
