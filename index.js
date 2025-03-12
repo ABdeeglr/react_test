@@ -1,7 +1,23 @@
 const express = require('express')
 const app = express()
 
+const requestLogger = (request, response, next) => {
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    next()
+}
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+
+
 app.use(express.json())
+app.use(requestLogger)
+app.use(unknownEndpoint)
 
 let notes = [
     {
@@ -42,7 +58,7 @@ app.get('/api/notes/:id', (request, response) => {
     if (note) {
         response.json(note)
     } else {
-        response.status(404).end('<h1>404 Not Found</h1>') 
+        response.status(404).end('<h1>404 Not Found</h1>')
         // end 能够结束 http 响应，在这里其实不需要发送数据，因为状态码已经说明了一切。
         // 特别是因为后端服务器是面向应用程序而非用户使用的，所以 `end()` 内部不需要参数。
     }
@@ -53,7 +69,7 @@ app.delete('/api/notes/:id', (request, response) => {
 
     // 用过滤后的新数组替换原数组
     notes = notes.filter(note => note.id !== Number(id))
-    
+
     response.status(204).end()
 })
 
