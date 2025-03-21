@@ -1,7 +1,21 @@
-const express = require('express')
-const cors = require('cors')
+const express = require('express');
+const cors = require('cors');
+const mysql = require('mysql2');
+const app = express();
 
-const app = express()
+const db = mysql.createConnection({
+    host: '192.168.2.9',
+    user: 'backend',
+    password: '114z@ng514xbcd(/s',
+    database: 'pfo_sample'
+})
+
+db.connect(err => {
+    if (err) {
+        console.error('数据库连接失败', err);
+        return;
+    }
+})
 
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method)
@@ -21,35 +35,9 @@ app.use(express.json())
 app.use(requestLogger)
 app.use(express.static('dist'))
 
-let notes = [
-    {
-        id: 1,
-        content: "HTML is easy",
-        date: "2019-05-30T17:30:31.098Z",
-        important: true
-    },
-    {
-        id: 2,
-        content: "Browser can execute only Javascript",
-        date: "2019-05-30T18:39:34.091Z",
-        important: false
-    },
-    {
-        id: 3,
-        content: "GET and POST are the most important methods of HTTP protocol",
-        date: "2019-05-30T19:20:14.298Z",
-        important: true
-    }
-]
-
-
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
-})
-
-app.get('/api/notes', (request, response) => {
-    response.json(notes)
 })
 
 app.get('/api/notes/:id', (request, response) => {
@@ -64,6 +52,23 @@ app.get('/api/notes/:id', (request, response) => {
         // end 能够结束 http 响应，在这里其实不需要发送数据，因为状态码已经说明了一切。
         // 特别是因为后端服务器是面向应用程序而非用户使用的，所以 `end()` 内部不需要参数。
     }
+})
+
+const user_consumption_table = 'userconsumptionrecords'
+
+app.get('/api/user_consumption/:user_id', (request, response) => {
+    const id = request.params.user_id;
+    const query = `SELECT * FROM ?? WHERE use_id = ?`;
+
+    db.query(query, [user_consumption_table, id], (err, result) => {
+        if (err) {
+            response.status(500).json({error: '数据库查询失败', query: 'SELECT * FROM table WHERE id = ??'});
+            return;
+        }
+        // console.log('查询成功');
+        // console.log(result);
+        response.json(result);
+    })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -95,6 +100,7 @@ app.post('/api/notes', (request, response) => {
 })
 
 app.use(unknownEndpoint)
+
 // 开启端口监听
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
